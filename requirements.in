@@ -1,0 +1,12 @@
+# Core
+bs4                 # Beautiful Soup for HTML parsing
+pandas              # Dataframes
+requests            # Get web site content
+
+# Fuzzy matching
+fuzzywuzzy          # Fuzzy String Matching
+python-Levenshtein  # Compute string edit distances
+
+# Excel IO
+XlsxWriter          # Create Excel files
+xlrd                # Extract data from Excel

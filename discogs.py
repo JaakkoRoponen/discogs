@@ -11,15 +11,6 @@ from dparser import Parser
 from utils.pexel import Pexel
 
 
-# add filename from command line args
-args_parser = ArgumentParser()
-args_parser.add_argument('filename', help='filename')
-args_parser.add_argument('-nu', '--no-urls', action='store_true',
-                         help="don't search urls")
-args_parser.add_argument('-nd', '--no-details', action='store_true',
-                         help="don't search details")
-
-
 def find_urls(data, parser):
     """Search and add album url to album data"""
     for index, album in data.df.iterrows():
@@ -40,13 +31,13 @@ def find_urls(data, parser):
             first_search_result = parser.find_matching_search_result(
                 website, match=album.Album)
             if first_search_result:
-                print(f'..Found {first_search_result}')
+                print(f'..Found {first_search_result}\n')
                 data.add_data_to_row(index, {
                     'Match by cat': 'Yes' if query_by_cat else 'No',
                     'Url': f'{parser.url}{first_search_result}'})
                 break
         else:
-            print('..Not found')
+            print('..Not found\n')
 
 
 def find_details(data, parser):
@@ -61,27 +52,42 @@ def find_details(data, parser):
         album_website = parser.get_album(album.Url)
         details = parser.find_album_details(album_website)
         if details:
-            print(f'..{details}')
+            print(f'..Found {details}\n')
             data.add_data_to_row(index, details)
         else:
-            print('..Not found')
+            print('..Not found\n')
 
 
-args = args_parser.parse_args()
+def main(args):
+    data = Pexel(args.filename)
+    data.df.fillna('', inplace=True)
 
-data = Pexel(args.filename)
-data.df.fillna('', inplace=True)
+    # Check that all required columns exist in the source file
+    if not all(col in data.df.columns for col in ['Cat', 'Artist', 'Album']):
+        sys.exit("Error: File must have columns 'Cat', 'Artist' and 'Album'")
 
-# Chech that all required columns exist in the source file
-if not all(col in data.df.columns for col in ['Cat', 'Artist', 'Album']):
-    sys.exit("Error: File must have columns 'Cat', 'Artist' and 'Album'")
+    parser = Parser()
 
-parser = Parser()
+    if not args.no_urls:
+        find_urls(data, parser)
+    if not args.no_details:
+        find_details(data, parser)
 
-if not args.no_urls:
-    find_urls(data, parser)
-if not args.no_details:
-    find_details(data, parser)
+    data.save()
+    print('Done!')
 
-data.save()
-print('Done!')
+
+if __name__ == '__main__':
+
+    # define command line args
+    args_parser = ArgumentParser()
+    args_parser.add_argument('filename', help='filename')
+    args_parser.add_argument('-nu', '--no-urls', action='store_true',
+                             help="don't search urls")
+    args_parser.add_argument('-nd', '--no-details', action='store_true',
+                             help="don't search details")
+
+    # get command line args
+    args = args_parser.parse_args()
+
+    main(args)

@@ -6,6 +6,8 @@ import sys
 
 import pandas as pd
 
+from xlrd.biffh import XLRDError
+
 
 class Pexel():
     """Pandas excel conversions"""
@@ -24,6 +26,8 @@ class Pexel():
             sys.exit(f"Permission denied: '{filename}'. Is the file open?")
         except OSError as err:
             sys.exit(f"System error: {err}")
+        except XLRDError:
+            sys.exit('Unsupported file format of corrupt file')
 
         df = pd.DataFrame()
         for sheet_name, sheet in sheets_dict.items():
